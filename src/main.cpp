@@ -1,33 +1,26 @@
 #include <Arduino.h>
-#include <SoftwareSerial.h>
-#include <Wire.h>
+#include "Bridge/Bridge.h"
 
-#define SLAVE_ADDR 9
-#define ANSWER 5
+void onBridgeData(char *data);
 
-void onReceive(int d);
-
-SoftwareSerial slaveSerial(10, 12);
+Bridge bridge(10, 12, 9600);
 
 void setup()
 {
 
   Serial.begin(9600);
-  slaveSerial.begin(9600);
+  bridge.init();
+  bridge.onEvent(onBridgeData);
   Serial.println("SLAVE");
 }
 
-int incomingByte = 0;
-
 void loop()
 {
-  while (slaveSerial.available() > 0)
-  {
-    incomingByte = slaveSerial.read();
-
-    slaveSerial.write("pong\r");
-
-    Serial.println(incomingByte);
-  }
+  bridge.loop();
   delay(1000);
+}
+
+void onBridgeData(char *data)
+{
+  Serial.println(data);
 }
