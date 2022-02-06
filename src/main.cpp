@@ -14,7 +14,7 @@ void setup()
   Serial.begin(9600);
   bridge.init();
   bridge.onEvent(onBridgeData);
-  Serial.println("SLAVE");
+  Serial.println("CONTROLLER_MODULE");
 }
 
 void loop()
