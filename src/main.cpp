@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include "Bridge/Bridge.h"
+#include <Bridge.h>
 
 void onBridgeData(char *data);
 
@@ -45,6 +45,5 @@ void onBridgeData(char *data)
   const char *msgType = doc["type"];
   Serial.println(msgType);
 
-  // bridge.send("ack\r");
   sendMessage();
 }
