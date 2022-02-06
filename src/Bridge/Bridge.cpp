@@ -18,50 +18,44 @@ void Bridge::loop()
 {
     if (comm.available() > 0)
     {
-        int i = 0;
         // read all
-        while (comm.available() > 0 || i > MAX_BUFF_SIZE)
+        while (comm.available() > 0)
         {
-            _buffer[i] = comm.read();
-            if (_buffer[i] == 13)
+            if (_currentBuffPosition > MAX_BUFF_SIZE)
             {
-                Serial.println("last");
+                resetBuffer();
             }
 
-            i++;
+            _buffer[_currentBuffPosition] = comm.read();
+
+            if (_buffer[_currentBuffPosition] == 13)
+            {
+
+                dispatchEvent(_buffer);
+                resetBuffer();
+                continue;
+            }
+
+            _currentBuffPosition++;
         }
-
-        dispatchEvent(_buffer);
-
-        send("ACK");
-
-        clearBuff();
     }
 }
 
-void Bridge::clearBuff()
+void Bridge::onMessageReceived()
+{
+    dispatchEvent(_buffer);
+}
+
+void Bridge::resetBuffer()
 {
     for (int i = 0; i < MAX_BUFF_SIZE; i++)
     {
         _buffer[i] = 0;
     }
+    _currentBuffPosition = 0;
 }
 
 void Bridge::send(char *data)
 {
     comm.write(data);
-}
-
-char *Bridge::getFormatedMessage(char *data)
-{
-    int size = sizeof(data);
-    char buff[size + 1];
-
-    buff[size + 1] = 13;
-
-    for (int i = 0; i < size; i++)
-    {
-        buff[i] = data[i];
-    }
-    return buff;
 }
