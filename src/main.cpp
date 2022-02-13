@@ -2,6 +2,8 @@
 #include <ArduinoJson.h>
 #include <Bridge.h>
 
+#include "./services/MessageFormatter.h"
+
 #define SENSOR_PIN A0
 
 void checkLight();
@@ -25,21 +27,17 @@ void loop()
 {
   bridge.loop();
   checkLight();
-  delay(500);
 }
 
 void sendMessage(int &value)
 {
-  DynamicJsonDocument doc(1024);
-  doc["type"] = value;
 
-  char dst[100];
-  char formatted[100];
+  char message[100];
 
-  serializeJson(doc, dst);
+  MessageFormatter::Format(message, "lightSensor", value);
 
-  sprintf(formatted, "%s\r", dst);
-  bridge.send(formatted);
+  Serial.println(message);
+  bridge.send(message);
 }
 
 void onBridgeData(char *data)
@@ -55,7 +53,7 @@ void checkLight()
 {
   static int level;
   static unsigned long lastEventTime = millis();
-  if ((millis() - lastEventTime) > 500)
+  if ((millis() - lastEventTime) > 1000)
   {
     level = analogRead(SENSOR_PIN);
     level = map(level, 0, 1023, 0, 255);
