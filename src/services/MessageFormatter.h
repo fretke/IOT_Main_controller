@@ -7,7 +7,8 @@ class MessageFormatter
 {
 public:
     MessageFormatter() = delete;
-    static void Format(char *emptyContainer, const char *entity, int &value)
+    template <typename T>
+    static void Format(char *emptyContainer, const char *entity, T &value)
     {
         DynamicJsonDocument doc(1024);
         doc["entity"] = entity;

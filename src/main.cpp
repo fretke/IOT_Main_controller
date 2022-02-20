@@ -3,8 +3,10 @@
 #include <Bridge.h>
 
 #include "./services/MessageFormatter.h"
+#include "./sensors/Temp_Humid.h"
 
 #define SENSOR_PIN A0
+#define DHT_PIN 52
 
 void checkLight();
 
@@ -14,6 +16,8 @@ void sendMessage(int &value);
 
 Bridge bridge(10, 12, 9600);
 
+TempHumidSensor tempSensor(&bridge, DHT_PIN, 5000);
+
 void setup()
 {
   pinMode(SENSOR_PIN, INPUT);
@@ -21,11 +25,13 @@ void setup()
   bridge.init();
   bridge.onEvent(onBridgeData);
   Serial.println("CONTROLLER_MODULE");
+  tempSensor.init();
 }
 
 void loop()
 {
   bridge.loop();
+  tempSensor.loop();
   checkLight();
 }
 
