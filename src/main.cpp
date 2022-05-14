@@ -7,6 +7,7 @@
 
 #define SENSOR_PIN A0
 #define DHT_PIN 52
+#define RELAY_8 50
 
 void checkLight();
 
@@ -14,13 +15,35 @@ void onBridgeData(char *data);
 
 void sendMessage(int &value);
 
+void processRelayChange(int &slot, bool &value);
+
 Bridge bridge(10, 12, 9600);
 
 TempHumidSensor tempSensor(&bridge, DHT_PIN, 5000);
 
+enum ActionTypes
+{
+  Unknown,
+  Relay
+};
+
+enum RelaySlots
+{
+  One = 1,
+  Two,
+  Three,
+  Four,
+  Five,
+  Six,
+  Seven,
+  Eight
+};
+
 void setup()
 {
   pinMode(SENSOR_PIN, INPUT);
+  pinMode(RELAY_8, OUTPUT);
+  digitalWrite(RELAY_8, HIGH);
   Serial.begin(9600);
   bridge.init();
   bridge.onEvent(onBridgeData);
@@ -48,11 +71,52 @@ void sendMessage(int &value)
 
 void onBridgeData(char *data)
 {
+  Serial.println("received message from wemos");
+  Serial.println(data);
   DynamicJsonDocument doc(1024);
   deserializeJson(doc, data);
 
-  const char *msgType = doc["type"];
-  Serial.println(msgType);
+  int type = doc["type"];
+
+  switch (type)
+  {
+  case ActionTypes::Relay:
+
+    int slot = doc["slot"];
+    bool slotState = doc["status"];
+    processRelayChange(slot, slotState);
+    break;
+
+  default:
+    break;
+  }
+}
+
+void processRelayChange(int &slot, bool &value)
+{
+  int pin = -1;
+
+  switch (slot)
+  {
+  case RelaySlots::Eight:
+    pin = RELAY_8;
+    break;
+
+  default:
+    break;
+  }
+
+  if (pin != -1)
+  {
+    if (value)
+    {
+      digitalWrite(pin, LOW);
+    }
+    else
+    {
+      digitalWrite(pin, HIGH);
+    }
+  }
 }
 
 void checkLight()
